@@ -2,6 +2,15 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
 startBtnRef = document.querySelector('button[data-start]');
+timerDayRef = document.querySelector('.value[data-days]');
+timerHourRef = document.querySelector('.value[data-hours]');
+timerMinRef = document.querySelector('.value[data-minutes]');
+timerSecRef = document.querySelector('.value[data-seconds]');
+
+// console.log('timerDayRef:', timerDayRef.textContent);
+// console.log('timerHourRef:', timerHourRef.textContent);
+// console.log('timerMinRef:', timerMinRef.textContent);
+// console.log('timerSecRef:', timerSecRef.textContent);
 
 startBtnRef.disabled = true;
 
@@ -29,8 +38,23 @@ function convertMs(ms) {
 
   return { days, hours, minutes, seconds };
 }
+function updateTimerInterface() {
+  timerDayRef.textContent = timer.days;
+  timerHourRef.textContent = timer.hours;
+  timerMinRef.textContent = timer.minutes;
+  timerSecRef.textContent = timer.seconds;
+}
+function onStartBtnClick() {
+  setInterval(() => {
+    console.log('it"s interval');
+    // timer = convertMs(selectedDateMs - currentDateMs);
 
-let timer = null;
+    updateTimerInterface();
+  }, 1000);
+}
+
+let timer = 0;
+let selectedDateMs = 0;
 const currentDate = new Date();
 const currentDateMs = currentDate.getTime();
 
@@ -41,10 +65,11 @@ const options = {
   minuteIncrement: 1,
   onClose(selectedDates) {
     if (selectedDates[0] > currentDate) {
-      let selectedDateMs = selectedDates[0].getTime();
+      selectedDateMs = selectedDates[0].getTime();
 
       timer = convertMs(selectedDateMs - currentDateMs);
-      console.log(timer);
+
+      updateTimerInterface();
 
       enableBtn(startBtnRef);
 
@@ -58,4 +83,5 @@ const options = {
 
 flatpickr('input#datetime-picker', options);
 
+startBtnRef.addEventListener('click', onStartBtnClick);
 // console.log(convertMs(140000)); // {days: 0, hours: 0, minutes: 2, seconds: 20}
