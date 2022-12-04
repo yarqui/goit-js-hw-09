@@ -1,57 +1,44 @@
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
-formRef = document.querySelector('.form');
+const formRef = document.querySelector('.form');
 
-let promiseCounter = 0;
 let delayValue = 0;
 let stepDelayValue = 0;
 let maxCounterValue = 0;
 
-function onFormSubmit(e) {
+const onFormSubmit = e => {
   e.preventDefault();
+
   const { delay, step, amount } = formRef.elements;
 
-  delayValue = delay.value;
-  stepDelayValue = step.value;
-  maxCounterValue = amount.value;
+  delayValue = Number(delay.value);
+  stepDelayValue = Number(step.value);
+  maxCounterValue = Number(amount.value);
 
-  const timerId = setInterval(
-    createPromise,
-    delayValue,
-    promiseCounter,
-    delayValue
-  );
-}
+  for (let i = 1; i <= maxCounterValue; i += 1) {
+    createPromise(i, delayValue)
+      .then(({ position, delay }) => {
+        Notify.success(`✅ Fulfilled promise ${position} in ${delay}ms`);
+      })
+      .catch(({ position, delay }) => {
+        Notify.failure(`❌ Rejected promise ${position} in ${delay}ms`);
+      });
+
+    delayValue += stepDelayValue;
+  }
+};
 
 function createPromise(position, delay) {
-  if (promiseCounter >= maxCounterValue) {
-    console.log("don't make promises");
-    clearInterval(timerId);
-    return;
-  }
-
-  const promise = new Promise((resolve, reject) => {
-    const shouldResolve = Math.random() > 0.3;
-
-    if (shouldResolve) {
-      resolve(`✅ Fulfilled promise ${position} in ${delay}ms`);
-    } else {
-      reject(`❌ Rejected promise ${position} in ${delay}ms`);
-    }
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      const shouldResolve = Math.random() > 0.3;
+      if (shouldResolve) {
+        resolve({ position, delay });
+      } else {
+        reject({ position, delay });
+      }
+    }, delay);
   });
-
-  promise
-    .then(result => {
-      console.log(result);
-    })
-    .catch(error => {
-      console.log(error);
-    });
-
-  promiseCounter += 1;
-  console.log('promiseCounter:', promiseCounter);
-
-  delayValue += stepDelayValue;
 }
 
 formRef.addEventListener('submit', onFormSubmit);
