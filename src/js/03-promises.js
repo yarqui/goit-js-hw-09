@@ -2,7 +2,7 @@ import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 formRef = document.querySelector('.form');
 
-let promiseCounter = 1;
+let promiseCounter = 0;
 let delayValue = 0;
 let stepDelayValue = 0;
 let maxCounterValue = 0;
@@ -15,48 +15,43 @@ function onFormSubmit(e) {
   stepDelayValue = step.value;
   maxCounterValue = amount.value;
 
-  createPromise(promiseCounter, delayValue);
+  const timerId = setInterval(
+    createPromise,
+    delayValue,
+    promiseCounter,
+    delayValue
+  );
 }
 
 function createPromise(position, delay) {
-  console.log('delayValue:', delayValue);
-  console.log('promiseCounter:', promiseCounter);
-
-  const shouldResolve = Math.random() > 0.3;
-
-  // TEST IF PROMISE POSITION IS LESS THEN AMOUNT
-  if (promiseCounter > maxCounterValue) {
+  if (promiseCounter >= maxCounterValue) {
     console.log("don't make promises");
+    clearInterval(timerId);
     return;
   }
-  // **********************************
 
-  //  PROMISE EXAMPLE***********
-  setInterval(() => {
-    const promise = new Promise((resolve, reject) => {
-      if (shouldResolve) {
-        resolve(`✅ Fulfilled promise ${position} in ${delay}ms`);
-      } else {
-        reject(`❌ Rejected promise ${position} in ${delay}ms`);
-      }
+  const promise = new Promise((resolve, reject) => {
+    const shouldResolve = Math.random() > 0.3;
+
+    if (shouldResolve) {
+      resolve(`✅ Fulfilled promise ${position} in ${delay}ms`);
+    } else {
+      reject(`❌ Rejected promise ${position} in ${delay}ms`);
+    }
+  });
+
+  promise
+    .then(result => {
+      console.log(result);
+    })
+    .catch(error => {
+      console.log(error);
     });
-    // ***********************************
 
-    // THEN & CATCH OF PROMISE
-    promise
-      .then(result => {
-        console.log(result);
-      })
-      .catch(error => {
-        console.log(error);
-      });
-    // ***********************************
+  promiseCounter += 1;
+  console.log('promiseCounter:', promiseCounter);
 
-    promiseCounter += 1;
-
-    delayValue += stepDelayValue;
-    console.log('position2:', position);
-  }, delayValue);
+  delayValue += stepDelayValue;
 }
 
 formRef.addEventListener('submit', onFormSubmit);
