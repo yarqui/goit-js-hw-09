@@ -98,4 +98,4 @@ function onStartBtnClick() {
   }, INTERVAL);
 }
 
-flatpickr('input#datetime-picker', options);
+flatpickr(inputDateRef, options);
