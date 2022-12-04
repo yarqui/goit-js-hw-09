@@ -2,6 +2,7 @@ import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 
 startBtnRef = document.querySelector('button[data-start]');
+inputDateRef = document.querySelector('input#datetime-picker');
 timerDayRef = document.querySelector('.value[data-days]');
 timerHourRef = document.querySelector('.value[data-hours]');
 timerMinRef = document.querySelector('.value[data-minutes]');
@@ -9,9 +10,11 @@ timerSecRef = document.querySelector('.value[data-seconds]');
 
 startBtnRef.disabled = true;
 
-let timerObjValue = {};
+let timerValueObj = {};
+let timerValueMs = '';
 const date = new Date();
 const currentDate = date.getTime();
+const INTERVAL = 1000;
 
 console.log('currentDate:', currentDate);
 const options = {
@@ -20,22 +23,37 @@ const options = {
   defaultDate: new Date(),
   minuteIncrement: 1,
   onClose(selectedDates) {
+    console.log('selectedDates:', selectedDates[0]);
     if (selectedDates[0] >= Date.now()) {
-      onDateInput(selectedDates[0]);
+      timerValueMs = Date.parse(selectedDates[0]) - Date.now();
+      timerValueObj = convertMs(timerValueMs);
+      console.log('timerValueObj1:', timerValueObj);
+
+      timerDayRef.textContent = addLeadingZero(timerValueObj.days);
+      timerHourRef.textContent = addLeadingZero(timerValueObj.hours);
+      timerMinRef.textContent = addLeadingZero(timerValueObj.minutes);
+      timerSecRef.textContent = addLeadingZero(timerValueObj.seconds);
+
+      enableEl(startBtnRef);
+
+      startBtnRef.addEventListener('click', onStartBtnClick);
+
       return;
     }
-    disableBtn(startBtnRef);
+    disableEl(startBtnRef);
 
     window.alert('Please choose a date in the future');
   },
 };
 
-function disableBtn(btn) {
-  btn.disabled = true;
+function disableEl(el) {
+  el.disabled = true;
 }
-function enableBtn(btn) {
-  btn.disabled = false;
+
+function enableEl(el) {
+  el.disabled = false;
 }
+
 function convertMs(ms) {
   // Number of milliseconds per unit of time
   const second = 1000;
@@ -54,29 +72,32 @@ function convertMs(ms) {
 
   return { days, hours, minutes, seconds };
 }
-function updateTimerInterface(selectedDates) {
-  let currentDate = date.getTime();
 
-  timerObjValue = convertMs(selectedDates - currentDate);
-
-  timerDayRef.textContent = timerObjValue.days;
-  timerHourRef.textContent = timerObjValue.hours;
-  timerMinRef.textContent = timerObjValue.minutes;
-  timerSecRef.textContent = timerObjValue.seconds;
+function addLeadingZero(value) {
+  return String(value).padStart(2, '0');
 }
+
 function onStartBtnClick() {
-  timerId = setInterval(() => {
-    updateTimerInterface(selectedDates);
-  }, 1000);
-}
+  disableEl(startBtnRef);
+  disableEl(inputDateRef);
 
-function onDateInput(selectedDates) {
-  enableBtn(startBtnRef);
-  // selectedDateMs = selectedDates[0].getTime();
+  startBtnRef.removeEventListener('click', onStartBtnClick);
 
-  updateTimerInterface(selectedDates);
+  const timerId = setInterval(() => {
+    if (timerValueMs <= INTERVAL) {
+      clearInterval(timerId);
+      return;
+    }
+
+    timerValueObj = convertMs(timerValueMs - INTERVAL);
+
+    timerDayRef.textContent = addLeadingZero(timerValueObj.days);
+    timerHourRef.textContent = addLeadingZero(timerValueObj.hours);
+    timerMinRef.textContent = addLeadingZero(timerValueObj.minutes);
+    timerSecRef.textContent = addLeadingZero(timerValueObj.seconds);
+
+    timerValueMs -= INTERVAL;
+  }, INTERVAL);
 }
 
 flatpickr('input#datetime-picker', options);
-
-startBtnRef.addEventListener('click', onStartBtnClick);
