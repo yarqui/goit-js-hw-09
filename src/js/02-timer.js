@@ -14,7 +14,6 @@ startBtnRef.disabled = true;
 let timerValueObj = {};
 let timerValueMs = '';
 const date = new Date();
-const currentDate = date.getTime();
 const INTERVAL = 1000;
 
 const options = {
